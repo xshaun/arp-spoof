@@ -237,8 +237,6 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-
-
 /**
  * mac_format_check
  * 检验mac地址合法性
