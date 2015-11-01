@@ -1,4 +1,22 @@
 /**
+ * Copyright (C) 2015  sunxiaoyang(https://github.com/sunxiaoyang)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+/**
  * 引入库文件
  */
 #include <stdio.h>
@@ -167,7 +185,7 @@ int main(int argc, char* argv[])
 -c,   攻击次数, 可选参数, 默认10\n    \
 -h,   帮助信息\n\n    \
 例如: arpspoof -t 192.168.1.140 -T AA:BB:CC:DD:EE:00 -s 192.168.1.254 -S AA:BB:CC:DD:EE:01 \n    \
-更多详情请参阅: http://www.github.com/sunxiaoyang\n");
+更多详情请参阅: https://github.com/sunxiaoyang\n");
     }  exit(1) ;
     }
   }
