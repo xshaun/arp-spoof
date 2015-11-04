@@ -1,16 +1,20 @@
 # ARP-spoof
 
-本程序模拟实现ARP攻击. 开发环境下有详述. 本程序依赖 Linux 运行环境, 若需在 Windows 下编译运行需做稍许修改.
+本程序模拟实现ARP攻击。程序依赖 Linux 运行环境, 若需在 Windows 下编译运行需做稍许修改。 被攻击主机使用 VirtualBox + Windows XP 进行模拟。
 
 ### 开发环境
 操作系统 : ubuntu 14.04 LTS   
 编辑器 : sublime text 2   
 编译器 : gcc (Ubuntu 4.8.4-2ubuntu1~14.04) 4.8.4   
+被攻击主机 : VirtualBox + Windows XP
 
 ### 编译
 编译链接 : ~$ gcc ./arpspoof.cpp -o arpspoof
 
 ### 运行
+**虚拟机网桥连接** :  
+使用VirtualBox，模拟运行Windows XP 作为被攻击的主机。（选择Windows XP是因为其运行所耗资源较少，若用户主机性能比较强悍的话，可以使用其他操作系统进行模拟攻击。）在选择运行Windows XP时，网络选择*桥接模式*，这样宿主机和主机拥有同一网段的IP，相当于局域网中的两台独立主机。
+
 **参数详情** :   
 1. -t,   目标 IP, 必须参数 --> 被攻击的主机 IP, 需填写正确   
 2. -T,   目标 MAC, 必须参数 --> 被攻击的主机 MAC, 需填写正确  
